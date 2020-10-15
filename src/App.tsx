@@ -1,26 +1,67 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import Container from "@material-ui/core/Container";
+import "./App.scss";
 
-function App() {
+export default function App() {
+  const [chatId, setChatId] = useState<any>(null);
+  const [chat, setChat] = useState<any[]>([]);
+  const [chatData, setChatData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      const { code, data }: { code: number; data: any[] } = await (
+        await fetch("https://gorest.co.in/public-api/posts")
+      ).json();
+
+      if (code === 200) setChatData(data);
+    };
+    getData();
+  }, []);
+
+  useEffect(() => {
+    if (chatId) {
+      const newdata = chatData.filter(({ id }) => id === chatId);
+      setChat(newdata);
+    }
+  }, [chatId, chatData]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container maxWidth="sm">
+      <div className="chat-box-wrapper-container">
+        <div className="chat-box-wrapper">
+          <span onClick={() => setChat([])} className="chat-header">
+            {chat.length > 0 ? "View all" : "Chat"}
+          </span>
+          <span onClick={() => {}} className="chat-status">
+            Available
+          </span>
+        </div>
+        <div className="chat-box">
+          {chat.length > 0 ? (
+            <>
+              {chat.map((chatitem) => (
+                <p className="message" key={chatitem.id}>
+                  {chatitem.body}
+                </p>
+              ))}
+            </>
+          ) : (
+            <>
+              {chatData.length > 0 &&
+                chatData.map((item) => (
+                  <div
+                    className="chat"
+                    onClick={() => setChatId(item.id)}
+                    key={item.id}
+                  >
+                    <p className="chat-box-username">placeholder name</p>
+                    <p className="chat-box-intro">{item.title}</p>
+                  </div>
+                ))}
+            </>
+          )}
+        </div>
+      </div>
+    </Container>
   );
 }
-
-export default App;
